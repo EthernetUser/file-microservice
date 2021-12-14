@@ -17,7 +17,9 @@ export class FileService {
     const createdFile = await this.fileModel.create(file);
     createdFile.deleted = false;
     this.logger.log(
-      `Stamp - ${createdFile.createdAt}, ObjectID - ${createdFile.id}, Type - UPLOAD, Cluster - ${process.pid}`,
+      `Stamp - ${new Date().toLocaleDateString()}, ObjectID - ${
+        createdFile.id
+      }, Type - UPLOAD, Cluster - ${process.pid}`,
     );
     return createdFile.save();
   }
@@ -47,7 +49,7 @@ export class FileService {
     file.deleted = true;
     file.save();
     this.logger.log(
-      `Stamp - ${new Date().toDateString()}, ObjectID - ${
+      `Stamp - ${new Date().toLocaleDateString()}, ObjectID - ${
         file.id
       }, Type - DELETE, Cluster - ${process.pid}`,
     );
