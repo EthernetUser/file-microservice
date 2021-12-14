@@ -21,7 +21,8 @@ export class FileService {
         createdFile.id
       }, Type - UPLOAD, Cluster - ${process.pid}`,
     );
-    return createdFile.save();
+    await createdFile.save();
+    return { statusCode: HttpStatus.OK };
   }
 
   async getFilesList(page: number) {
