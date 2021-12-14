@@ -1,8 +1,21 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule } from './modules/app/app.module';
+import { ClusterService } from './modules/cluster/cluster.service';
+import { Logger } from '@nestjs/common';
 
+const logger = new Logger('BOOTSTRAP');
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  await app.listen(3000);
+  try {
+    const app = await NestFactory.create(AppModule);
+    const PORT = process.env.PORT || 3000;
+    app.setGlobalPrefix('api');
+    await app.listen(PORT, () =>
+      logger.log(`Server started on ${PORT} port...`),
+    );
+  } catch (e) {
+    logger.error(e);
+    process.exit();
+  }
 }
-bootstrap();
+
+ClusterService.clusterize(bootstrap);
