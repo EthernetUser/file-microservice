@@ -1,8 +1,8 @@
 {
   "name": "file-microservice",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "file-microservice",
+  "author": "Alexander Melnikov <okman5757@gmail.com>",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
