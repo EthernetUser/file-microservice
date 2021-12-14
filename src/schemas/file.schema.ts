@@ -24,7 +24,7 @@ export class File {
   path: string;
 
   @Prop()
-  isforremove: boolean;
+  deleted: boolean;
 
   @Prop()
   createdAt?: Date;
