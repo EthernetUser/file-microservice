@@ -41,6 +41,6 @@ export class FileController {
 
   @Delete('/delete/:id')
   async deleteFile(@Param('id') id: string) {
-    return this.fileService.deleteFile(id);
+    return this.fileService.markAsDeleted(id);
   }
 }
