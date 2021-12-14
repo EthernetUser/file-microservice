@@ -2,6 +2,9 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { File, FileDocument } from '../../schemas/file.schema';
 import { Model } from 'mongoose';
+import { Cron } from '@nestjs/schedule';
+const fs = require('fs');
+const path = require('path');
 
 const LIMIT = 5;
 
@@ -12,7 +15,7 @@ export class FileService {
 
   async uploadFile(file: Express.Multer.File) {
     const createdFile = await this.fileModel.create(file);
-    createdFile.isforremove = false;
+    createdFile.deleted = false;
     this.logger.log(
       `Stamp - ${createdFile.createdAt}, ObjectID - ${createdFile.id}, Type - UPLOAD, Cluster - ${process.pid}`,
     );
@@ -22,31 +25,42 @@ export class FileService {
   async getFilesList(page: number) {
     const skip = page * LIMIT;
     return this.fileModel
-      .find()
-      .where('isforremove')
+      .find({}, ['filename', 'size', 'createdAt'])
+      .where('deleted')
       .equals(false)
       .skip(skip)
       .limit(LIMIT)
       .sort({ createdAt: -1 });
   }
 
-  async deleteFile(id: string) {
+  async markAsDeleted(id: string) {
     const file = await this.fileModel.findById(id);
     if (!file) {
       throw new HttpException('File is not founded', HttpStatus.NOT_FOUND);
     }
-    if (file.isforremove) {
+    if (file.deleted) {
       throw new HttpException(
         'File is already deleted',
         HttpStatus.BAD_REQUEST,
       );
     }
-    file.isforremove = true;
+    file.deleted = true;
+    file.save();
     this.logger.log(
       `Stamp - ${new Date().toDateString()}, ObjectID - ${
         file.id
       }, Type - DELETE, Cluster - ${process.pid}`,
     );
     return { statusCode: HttpStatus.OK };
+  }
+
+  @Cron('0 30 23 * * *')
+  async deleteMarkedFiles() {
+    const files = await this.fileModel.find().where('deleted').equals(true);
+    for (const file of files) {
+      fs.rmSync(path.join(__dirname, '..', '..', '..', (await file).path));
+      await (await file).remove();
+    }
+    this.logger.log('Marked files are removed');
   }
 }
