@@ -33,9 +33,20 @@ export class FileService {
   async deleteFile(id: string) {
     const file = await this.fileModel.findById(id);
     if (!file) {
-      throw new HttpException('File not founded', HttpStatus.NOT_FOUND);
+      throw new HttpException('File is not founded', HttpStatus.NOT_FOUND);
+    }
+    if (file.isforremove) {
+      throw new HttpException(
+        'File is already deleted',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     file.isforremove = true;
+    this.logger.log(
+      `Stamp - ${new Date().toDateString()}, ObjectID - ${
+        file.id
+      }, Type - DELETE, Cluster - ${process.pid}`,
+    );
     return { statusCode: HttpStatus.OK };
   }
 }
